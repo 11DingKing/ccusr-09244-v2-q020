@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import engine, Base
-from app.routers import common, operation, dataset, analytics
+from app.routers import common, operation, dataset, analytics, anomaly
 
 
 def create_tables():
@@ -66,6 +66,12 @@ app = FastAPI(
 - 标注完成率、复用率
 - 失败原因分析
 - 按审核状态统计（待审/已发布等）
+
+### 异常监测
+- 按机型、场景、技能组合定义失败率监测规则（窗口宽度、最低样本量、迟滞阈值）
+- 按作业业务时间生成连续窗口，迟到补录只重算未确认区间
+- 触发与恢复阈值形成迟滞区，异常不在阈值附近反复开关
+- 确认、忽略、恢复均保留操作者与依据，规则变更不覆盖旧事件
     """,
     docs_url="/docs",
     redoc_url="/redoc"
@@ -85,6 +91,7 @@ app.include_router(common.router, prefix=api_prefix)
 app.include_router(operation.router, prefix=api_prefix)
 app.include_router(dataset.router, prefix=api_prefix)
 app.include_router(analytics.router, prefix=api_prefix)
+app.include_router(anomaly.router, prefix=api_prefix)
 
 
 @app.get("/", tags=["首页"])
